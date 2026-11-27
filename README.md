@@ -1,60 +1,66 @@
 # Mitema
 
-<img src="mitema.png" alt="縦糸と横糸を組み合わせたMitemaの紋章" width="120">
+[日本語](README.ja.md)
 
-Mitema は、概念どうしの関係を短いテキストで書き表す言語です。物語の登場人物が誰に何をしたか、ある象徴から何を連想するか、二つの題材のどこが対応するかを書き留められます。
+<p align="center">
+  <img src="mitema.png" alt="Mitema emblem with interwoven warp and weft threads" width="120">
+</p>
 
-Mitema という名前は、神話素（英語で *mytheme*）を意味するスペイン語の *mitema* に由来します。
+Mitema is a plain-text language for describing relationships between concepts. You can use it to record who did what in a story, what a symbol brings to mind, or how a relationship in one setting corresponds to a relationship in another.
 
-## 比喩を書いてみる
+The name comes from the Spanish word *mitema*, meaning “mytheme,” a basic unit of a myth.
 
-「国を船にたとえると、船長に当たるのは誰か」。テキストファイルの本文を `[[名前]]` で始め、その下に見立てと対応を書きます。
+## Basic operators
 
-```text
-[[船の比喩]]
-国 => 船
+| Operator | Meaning | Example |
+|---|---|---|
+| `>` | The term on the left is a broader category. | `vessel > sailboat` |
+| `<>` | Contrast two concepts. | `calm <> storm` |
+| `->` | Link a concept to an association or attribute. | `compass -> direction` |
+| `=>` | Read the left-hand term through the right-hand term as a metaphor. | `state => ship` |
+| `-->`, `-[label]->` | Connect two terms in a relationship diagram. The optional label names the relationship. | `captain + navigator -[choose]-> course` |
+| `==>`, `=[label]=>` | The term on the left becomes the one on the right. The optional label names the event or process. | `apprentice =[appointment]=> navigator` |
+| `:>` | Describe a trait or behavior associated with a role. | `navigator :> 'plots the course'` |
+| `:` | List one or more parts of the whole on the left. | `ship : [hull, sail]` |
+| `=` | Define a term with a text description. | `captain = the person in command of a ship` |
 
-航海 map 統治 {
-  船長 -> 統治者
-  船   -> 国
-}
+## Writing a metaphor
 
-船長 -[舵を取る]-> 船 map 統治者 -[治める]-> 国
-```
-
-- `国 => 船` は「国を船として捉える」と読みます。
-- `航海 map 統治` の波括弧の中では、`->` で対応を一組ずつ示します。航海での船長は統治者に、船は国に当たります。
-- 最後の一行は、関係全体の対応です。船長が船の舵を取ることを、統治者が国を治めることに重ねています。
-
-## 人物ごとの視点を書く
-
-同じ航海でも、誰が語るかによって確かに言えることは変わります。
+If a state is a ship, who is its captain? Start the body of a text file with a name in double brackets, then write down the metaphor and the correspondences you see.
 
 ```text
-[[航海日誌]]
-view 船医 {
-  船長 -[相談する]-> 船医
+[['Ship of state']]
+state => ship
+
+navigation map governance {
+  captain -> ruler
+  ship    -> state
 }
-view 見習い {
-  船長 -[相談する]-> 船医?
+
+captain -[steers]-> ship map ruler -[governs]-> state
+```
+
+Read `state => ship` as “think of the state as a ship.” Inside the `map` block, each arrow pairs a term from navigation with its counterpart in governance. The final line maps a whole relationship. The captain steers the ship as the ruler governs the state.
+
+## Recording a point of view
+
+Two people on the same voyage may give different accounts of what happened.
+
+```text
+[['Voyage log']]
+view surgeon {
+  captain -[consults]-> surgeon
+}
+view apprentice {
+  captain -[consults]-> surgeon?
 }
 ```
 
-船医の視点では、船長から相談を受けたことが確かです。見習いの行の末尾にある `?` は、相談があったかどうか判断を保留していることを示します。各視点には、その視点での読みを明示します。
+In the surgeon’s account, the captain consulted the surgeon. In the apprentice’s account, the trailing `?` leaves open whether the consultation took place. Each `view` records that person’s perspective explicitly.
 
-## よく使う記法
+## Specification and license
 
-| 書き方 | 読み方 |
-|---|---|
-| `船長 = 船の指揮を執る人` | 「船長」の意味を定義する |
-| `船 : [船体, 帆]` | 船体と帆を、それぞれ船の構成要素として挙げる |
-| `羅針盤 -> 方角` | 羅針盤から方角を連想する |
-| `船長 + 航海士 -[決める]-> 進路` | 船長と航海士が一緒に進路を決める |
-| `見習い =[任命]=> 航海士` | 任命を経て、見習いが航海士になる |
+The definition file format is under development. The first version focuses on recording relationships. Search and extraction are left to separate tools.
 
-## 仕様とライセンス
-
-現在は定義ファイルの仕様を策定しています。初版では関係の記録を扱い、検索や抽出は別のツールに委ねる方針です。
-
-- [定義ファイル仕様](SPEC.md) — 演算子の一覧、セクションの分け方、注釈、文法（EBNF）。
-- [MIT ライセンス](LICENSE)
+- [Definition file specification (Japanese)](SPEC.md) — operators, sections, annotations, and the EBNF grammar.
+- [MIT License](LICENSE)
