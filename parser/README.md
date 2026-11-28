@@ -4,10 +4,7 @@ This repository contains a Go parser for the Mitema syntax described in
 [SPEC.md](../SPEC.md). It uses only the Go standard library.
 
 ```go
-// Working directory: parser
-source, err := os.ReadFile("../examples/social_order.txt")
-if err != nil { /* handle error */ }
-file, err := mitema.Parse(string(source))
+file, err := mitema.Parse("[[航海]]\n船長 -> 船")
 if err != nil { /* handle syntax error */ }
 _ = file
 ```

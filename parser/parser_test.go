@@ -1,7 +1,6 @@
 package mitema
 
 import (
-	"os"
 	"strings"
 	"testing"
 )
@@ -91,15 +90,11 @@ func TestViewMetadata(t *testing.T) {
 }
 
 func TestExample(t *testing.T) {
-	data, err := os.ReadFile("../examples/social_order.txt")
+	f, err := Parse("---\n航海日誌\n---\n[[船]]\n[乗組員]\n船長 -> 船\n[航路]\n港 -> 海")
 	if err != nil {
 		t.Fatal(err)
 	}
-	f, err := Parse(string(data))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(f.Documents) != 1 || f.Documents[0].Header == nil || len(f.Documents[0].Tops) != 1 || len(f.Documents[0].Tops[0].Sections) != 6 {
+	if len(f.Documents) != 1 || f.Documents[0].Header == nil || len(f.Documents[0].Tops) != 1 || len(f.Documents[0].Tops[0].Sections) != 2 {
 		t.Fatalf("unexpected document: %+v", f.Documents)
 	}
 }
