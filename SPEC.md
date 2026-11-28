@@ -198,6 +198,7 @@ view 船医 {
 @voice(captain)
 @source(logbook)
 船長 = 船の進路を決める人
+@id('view_id')
 view narrator {
   @source(logbook)
   船長 -[舵を取る]-> 船 # この場面での役割
@@ -206,7 +207,7 @@ view narrator {
 
 ヘッダの文章は文書全体に属する。この例の `@voice(captain)` と `@source(logbook)` は船長の定義文に付く。`@id(crew)` の `id` もメタデータ名の一例であり、名前ごとの意味や一意性の検証は利用するツールが決める。
 
-メタデータは名前付きトップレベル、名前付きセクション、定義文、関係文、単独の適用文、`map` 文とそのサブ項目に付けられる。ブロック内では対象と字下げをそろえて書ける。所属は波括弧と記述の位置で決まり、親のメタデータは子へ継承しない。
+メタデータは名前付きトップレベル、名前付きセクション、視点ブロック、定義文、関係文、単独の適用文、`map` 文とそのサブ項目に付けられる。上の例では `@id('view_id')` が視点 `narrator` 自体に付く。ブロック内では対象と字下げをそろえて書ける。所属は波括弧と記述の位置で決まり、親のメタデータは子へ継承しない。
 
 ## 5. 名前・空白・注釈
 
@@ -233,6 +234,8 @@ view narrator {
 本文の引用識別子・文字列の外では、最初の `#` が注釈を開始する。その後の `#` も本文に含めるため、`## メモ` は `# メモ` を本文とする注釈になる。
 
 この規則は本文の行頭・行末で共通とする。行末の注釈は同じ行の対象に紐づける。複数行の右辺リストでは第 2 節の規則に従う。独立行の注釈は直下の行に紐づく。連続する注釈行は、その直下の記述をまとめて説明する。空行や文書末で対象がない場合も注釈の内容と位置を保持する。
+
+右辺リストの開始 `[` と、`view`・`map` の開始 `{` の直後には行末注釈を書けない。項目の直上の注釈はその項目に付き、閉じる `]` や `}` の直前の独立した注釈行は無効とする。右辺リストの区切りコンマの直前にも独立した注釈行は置けない。閉じ記号で文を終えた行の末尾注釈は、その記号で完結する文全体に付く。メタデータ行の直上の注釈はそのメタデータに付く。メタデータから対象までの間に置けるのは、同じ対象に付く追加のメタデータ行だけである。
 
 
 水平空白は半角スペース（U+0020）とタブ（U+0009）に限る。全角スペース（U+3000）は区切りに使えない。改行は LF と CRLF を受け付け、それぞれ一回の改行として読む。演算子は最長一致で認識し、暗喩の `=>`、変化の `==>`、ラベル付きの変化を始める `=[` は、定義の `=` より先に認識する。空ファイル・空行・末尾改行の省略を扱う。
@@ -283,12 +286,13 @@ nonempty_line ::= statement [ annotation ] | annotation ;
 annotation ::= ANNOTATION ;
 statement  ::= section | view_block | entry ;
 entry      ::= { metadata_line } ( mapping | definition | relation | [ "not" ] application ) ;
-view_block ::= "view" name "{" [ annotation ] NL { view_line NL } "}" ;
-view_line  ::= [ entry [ annotation ] | annotation ] ;
+view_block ::= { metadata_line } "view" name "{" NL { blank | [ notes ] entry [ annotation ] NL } "}" ;
+notes      ::= annotation NL { annotation NL } ;
+blank      ::= [ notes ] NL ;
 
 mapping    ::= term "map" term [ map_block ] | relation "map" relation ;
-map_block  ::= "{" [ annotation ] NL { map_line NL } "}" ;
-map_line   ::= [ { metadata_line } term "->" term [ annotation ] | annotation ] ;
+map_block  ::= "{" NL { blank | [ notes ] map_line NL } "}" ;
+map_line   ::= { metadata_line } term "->" term [ annotation ] ;
 
 section    ::= { metadata_line } "[" path "]" ;
 path       ::= name { "." name } ;
@@ -312,8 +316,9 @@ list       ::= "[" [ item { "," item } ] "]" ;
 
 right_term ::= right_item | right_list ;
 right_item ::= path [ "?" ] | application | combination ;
-right_list ::= "[" list_gap [ right_item list_gap { "," list_gap right_item list_gap } ] "]" ;
-list_gap   ::= { [ annotation ] NL } ;
+right_list ::= "[" ( [ list_space ] | list_item { "," [ annotation ] list_item } ) "]" ;
+list_space ::= NL { blank } ;
+list_item  ::= [ list_space [ notes ] ] right_item [ annotation ] [ list_space ] ;
 
 operator   ::= ">" | "<>" | "=>" | "->" | diagram_arrow | transformation_arrow | ":>" ;
 diagram_arrow ::= "-->" | "-[" [ name ] "]->" ;
@@ -329,5 +334,5 @@ name       ::= IDENT | QUOTED_IDENT ;
 
 `file` の最初の `body` は空でもよいため、ファイルの1行目に `---` を書いて `header` を開始できる。
 
-`explicit_relation` の連鎖は演算子の種類がそろっていることを検証する。関係図の矢印は `diagram_arrow`、変化の矢印は `transformation_arrow` をそれぞれ一種類と数え、ラベルは各辺に保持する。`right_list` は構成関係の右辺でも使える。`list_gap` は改行や注釈を受け付け、項目間のコンマは必須とする。
+`explicit_relation` の連鎖は演算子の種類がそろっていることを検証する。関係図の矢印は `diagram_arrow`、変化の矢印は `transformation_arrow` をそれぞれ一種類と数え、ラベルは各辺に保持する。`right_list` は構成関係の右辺でも使える。項目間のコンマは必須とする。`blank` の末尾の空行は直前の注釈と次の対象を切り離す。
 
